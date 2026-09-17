@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS public."verification" (
     value TEXT NOT NULL,
     expires_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITHOUT TIME ZONE,
+    updated_at TIMESTAMP WITHOUT TIME ZONE
 );
 
 -- +goose Down

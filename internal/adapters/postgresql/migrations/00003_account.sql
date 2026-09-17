@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS public."account" (
     id TEXT PRIMARY KEY NOT NULL,
     account_id TEXT NOT NULL,
     provider_id TEXT NOT NULL,
-    user_id TEXT NOT NULL REFERENCES public."user"(id) ON CASCADE DELETE,
+    user_id TEXT NOT NULL REFERENCES public."user"(id) ON DELETE CASCADE,
     access_token TEXT,
     refresh_token TEXT,
     id_token TEXT,

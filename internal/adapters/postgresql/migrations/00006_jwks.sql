@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS public."jwks" (
     alg TEXT,
     crv TEXT,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    expires_at TIMESTAMP WITHOUT TIME ZONE,
+    expires_at TIMESTAMP WITHOUT TIME ZONE
 );
 
 -- +goose Down

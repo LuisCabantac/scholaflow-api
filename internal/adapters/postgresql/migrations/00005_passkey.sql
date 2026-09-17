@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public."passkey" (
     backed_up BOOLEAN NOT NULL,
     transports TEXT,
     created_at TIMESTAMP WITHOUT TIME ZONE,
-    aaguid TEXT,
+    aaguid TEXT
 );
 
 -- +goose Down
