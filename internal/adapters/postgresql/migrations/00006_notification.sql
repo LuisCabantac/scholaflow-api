@@ -1,5 +1,5 @@
 -- +goose Up
--- -- +goose StatementBegin
+-- +goose StatementBegin
 DO $$ BEGIN
     CREATE TYPE public.notification_type AS ENUM ('stream', 'assignment', 'quiz', 'question', 'material', 'comment', 'join', 'addToClass', 'submit', 'grade');
 EXCEPTION
