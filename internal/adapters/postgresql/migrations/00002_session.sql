@@ -1,6 +1,6 @@
 -- +goose Up
 CREATE TABLE IF NOT EXISTS public."session" (
-    id TEXT NOT NULL,
+    id TEXT PRIMARY KEY NOT NULL,
     token TEXT NOT NULL UNIQUE,
     user_id TEXT NOT NULL REFERENCES public."user"(id) ON DELETE CASCADE,
     expires_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
