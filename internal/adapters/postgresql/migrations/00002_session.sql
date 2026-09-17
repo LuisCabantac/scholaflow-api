@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS public."session" (
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     ip_address TEXT,
     user_agent TEXT,
-
 );
 
 -- +goose Down
