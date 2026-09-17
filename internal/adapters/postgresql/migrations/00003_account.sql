@@ -11,9 +11,11 @@ CREATE TABLE IF NOT EXISTS public."account" (
     refresh_token_expires_at TIMESTAMP WITHOUT TIME ZONE,
     scope TEXT,
     password TEXT,
-    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_account_user_id ON public."account"(user_id);
 
 -- +goose Down
 DROP TABLE IF EXISTS public."account";
