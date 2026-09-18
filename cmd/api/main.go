@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
 	"time"
 
@@ -109,5 +111,9 @@ func main() {
 		db:         pool,
 		queries:    queries,
 		cfg:        cfg,
+	}
+
+	if err := api.run(api.mount()); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatalf("server failed to start: %v", err)
 	}
 }
