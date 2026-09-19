@@ -112,7 +112,10 @@ func main() {
 		mailClient: mailClient,
 		db:         pool,
 		queries:    queries,
-		cfg:        cfg,
+		jwks: &jwksCache{
+			ttl: 1 * time.Hour,
+		},
+		cfg: cfg,
 	}
 
 	if err := api.run(api.mount()); err != nil && !errors.Is(err, http.ErrServerClosed) {

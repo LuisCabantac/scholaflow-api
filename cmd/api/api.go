@@ -20,6 +20,13 @@ type dbConfig struct {
 	dsn string
 }
 
+type jwksCache struct {
+	mu          sync.RWMutex
+	keySet      jwk.Set
+	lastFetched time.Time
+	ttl         time.Duration
+}
+
 type config struct {
 	addr    string
 	env     string
@@ -33,6 +40,7 @@ type application struct {
 	mailClient *mail.Client
 	db         *pgxpool.Pool
 	queries    *postgres.Queries
+	jwks       *jwksCache
 	cfg        config
 }
 
