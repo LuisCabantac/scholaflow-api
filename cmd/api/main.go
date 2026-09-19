@@ -32,6 +32,7 @@ func main() {
 	port := env.GetString("PORT", "8080")
 	environment := env.GetString("APP_ENV", "development")
 	appUrl := env.GetRequired("APP_URL")
+	authUrl := env.GetRequired("AUTH_URL")
 	dbUrl := env.GetRequired("GOOSE_DBSTRING")
 	smtpEmail := env.GetRequired("SMTP_EMAIL")
 	smtpPassword := env.GetRequired("SMTP_PASSWORD")
@@ -97,9 +98,10 @@ func main() {
 	queries := postgres.New(pool)
 
 	cfg := config{
-		addr:   ":" + port,
-		env:    environment,
-		appUrl: appUrl,
+		addr:    ":" + port,
+		env:     environment,
+		appUrl:  appUrl,
+		authUrl: authUrl,
 		db: dbConfig{
 			dsn: dbUrl,
 		},

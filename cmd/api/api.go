@@ -21,10 +21,11 @@ type dbConfig struct {
 }
 
 type config struct {
-	addr   string
-	env    string
-	appUrl string
-	db     dbConfig
+	addr    string
+	env     string
+	appUrl  string
+	authUrl string
+	db      dbConfig
 }
 
 type application struct {
