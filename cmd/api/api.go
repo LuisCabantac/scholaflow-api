@@ -1,20 +1,40 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
+	"sync"
 	"time"
 
 	postgres "github.com/LuisCabantac/scholaflow-api/internal/adapters/postgresql/sqlc"
+	"github.com/LuisCabantac/scholaflow-api/internal/apperrors"
 	"github.com/LuisCabantac/scholaflow-api/internal/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/lestrrat-go/jwx/v4/jwk"
+	"github.com/lestrrat-go/jwx/v4/jwt"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/wneessen/go-mail"
 )
+
+const apiName = "ScholaFlow API"
+
+const version = "1.0.0"
+
+type contextKey string
+
+const authUserContextKey contextKey = "authUser"
+
+type AuthUser struct {
+	ID    string
+	Email string
+	Name  string
+}
 
 type dbConfig struct {
 	dsn string
@@ -43,10 +63,6 @@ type application struct {
 	jwks       *jwksCache
 	cfg        config
 }
-
-const apiName = "ScholaFlow API"
-
-const version = "1.0.0"
 
 func (app *application) mount() http.Handler {
 	r := chi.NewRouter()
@@ -84,9 +100,12 @@ func (app *application) mount() http.Handler {
 			Environment: app.cfg.env,
 		})
 	})
-
 	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		response.Text(w, http.StatusOK, "OK")
+	})
+
+	r.Route("/api/v1", func(r chi.Router) {
+		r.Use(app.authenticate)
 	})
 
 	return r
@@ -104,4 +123,83 @@ func (app *application) run(h http.Handler) error {
 	slog.Info("starting server", "addr", app.cfg.addr, "env", app.cfg.env)
 
 	return srv.ListenAndServe()
+}
+
+func (app *application) getCachedKeySet() jwk.Set {
+	app.jwks.mu.RLock()
+	defer app.jwks.mu.RUnlock()
+
+	if app.jwks.keySet != nil && time.Since(app.jwks.lastFetched) < app.jwks.ttl {
+		return app.jwks.keySet
+	}
+
+	return nil
+}
+
+func (app *application) getKeySet(ctx context.Context) (jwk.Set, error) {
+	if set := app.getCachedKeySet(); set != nil {
+		return set, nil
+	}
+
+	app.jwks.mu.Lock()
+	defer app.jwks.mu.Unlock()
+
+	if app.jwks.keySet != nil && time.Since(app.jwks.lastFetched) < app.jwks.ttl {
+		return app.jwks.keySet, nil
+	}
+
+	jwksURL := fmt.Sprintf("%s/api/auth/jwks", app.cfg.authURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, jwksURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	set, err := jwk.ParseReader(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	app.jwks.keySet = set
+	app.jwks.lastFetched = time.Now()
+
+	return app.jwks.keySet, nil
+}
+
+func (app *application) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		keySet, err := app.getKeySet(r.Context())
+		if err != nil {
+			response.Error(w, apperrors.ErrInternalServerError)
+			return
+		}
+
+		token, err := jwt.ParseRequest(r, jwt.WithKeySet(keySet), jwt.WithValidate(true))
+		if err != nil {
+			response.Error(w, apperrors.ErrUnauthorizedAccess)
+			return
+		}
+		userID, ok := token.Subject()
+		if !ok || userID == "" {
+			response.Error(w, apperrors.ErrUnauthorizedAccess)
+			return
+		}
+
+		email, _ := jwt.Get[string](token, "email")
+		name, _ := jwt.Get[string](token, "name")
+
+		authUsr := &AuthUser{
+			ID:    userID,
+			Email: email,
+			Name:  name,
+		}
+
+		ctx := context.WithValue(r.Context(), authUserContextKey, authUsr)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
