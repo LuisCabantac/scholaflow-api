@@ -23,8 +23,8 @@ type dbConfig struct {
 type config struct {
 	addr    string
 	env     string
-	appUrl  string
-	authUrl string
+	appURL  string
+	authURL string
 	db      dbConfig
 }
 
@@ -47,7 +47,7 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	allowedOrigins := []string{app.cfg.appUrl}
+	allowedOrigins := []string{app.cfg.appURL}
 	if app.cfg.env == "development" {
 		allowedOrigins = append(allowedOrigins, "http://localhost:3000", "http://localhost:5173")
 	}

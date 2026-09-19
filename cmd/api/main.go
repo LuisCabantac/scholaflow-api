@@ -31,9 +31,9 @@ func main() {
 
 	port := env.GetString("PORT", "8080")
 	environment := env.GetString("APP_ENV", "development")
-	appUrl := env.GetRequired("APP_URL")
-	authUrl := env.GetRequired("AUTH_URL")
-	dbUrl := env.GetRequired("GOOSE_DBSTRING")
+	appURL := env.GetRequired("APP_URL")
+	authURL := env.GetRequired("AUTH_URL")
+	dbURL := env.GetRequired("GOOSE_DBSTRING")
 	smtpEmail := env.GetRequired("SMTP_EMAIL")
 	smtpPassword := env.GetRequired("SMTP_PASSWORD")
 
@@ -73,7 +73,7 @@ func main() {
 		log.Fatalf("failed to create mail client: %v", err)
 	}
 
-	poolCfg, err := pgxpool.ParseConfig(dbUrl)
+	poolCfg, err := pgxpool.ParseConfig(dbURL)
 	if err != nil {
 		log.Fatalf("failed to parse db config: %v", err)
 	}
@@ -100,10 +100,10 @@ func main() {
 	cfg := config{
 		addr:    ":" + port,
 		env:     environment,
-		appUrl:  appUrl,
-		authUrl: authUrl,
+		appURL:  appURL,
+		authURL: authURL,
 		db: dbConfig{
-			dsn: dbUrl,
+			dsn: dbURL,
 		},
 	}
 
