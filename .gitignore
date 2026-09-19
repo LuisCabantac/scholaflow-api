@@ -1,2 +1,18 @@
+# env files
 .env
-.env.local
+.env.*
+!.env.example
+
+# air / Build temp folders & binaries
+tmp/
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# OS & IDE metadata
+.DS_Store
+.idea/
+.vscode/
