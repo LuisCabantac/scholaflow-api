@@ -103,7 +103,7 @@ func (app *application) mount() http.Handler {
 			classroomSvc := classrooms.NewService(app.queries)
 			classroomHandler := classrooms.NewHandler(classroomSvc)
 
-			r.Post("/", classroomHandler.CreateClassroom)
+			r.Post("/", classroomHandler.Create)
 
 		})
 

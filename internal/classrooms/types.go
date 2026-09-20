@@ -10,7 +10,7 @@ import (
 )
 
 type Service interface {
-	CreateClassroom(ctx context.Context, req CreateClassroomRequest, userID string) (*postgres.Classroom, error)
+	Create(ctx context.Context, req CreateClassroomRequest, userID string) (*postgres.Classroom, error)
 }
 
 type CreateClassroomRequest struct {

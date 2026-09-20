@@ -19,7 +19,7 @@ func NewHandler(svc Service) *handler {
 	}
 }
 
-func (h *handler) CreateClassroom(w http.ResponseWriter, r *http.Request) {
+func (h *handler) Create(w http.ResponseWriter, r *http.Request) {
 	var createClassroomReq CreateClassroomRequest
 	err := request.DecodeJSON(r, &createClassroomReq)
 	if err != nil {
@@ -33,9 +33,9 @@ func (h *handler) CreateClassroom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	classroom, err := h.service.CreateClassroom(r.Context(), createClassroomReq, user.ID)
+	classroom, err := h.service.Create(r.Context(), createClassroomReq, user.ID)
 	if err != nil {
-		response.Error(w, apperrors.ErrUnauthorizedAccess)
+		response.Error(w, err)
 		return
 	}
 
