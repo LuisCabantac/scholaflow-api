@@ -11,6 +11,7 @@ import (
 	"github.com/LuisCabantac/scholaflow-api/internal/apperrors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
@@ -98,4 +99,17 @@ func (s *svc) Enroll(ctx context.Context, req EnrollClassroomRequest, userID str
 
 	return &enrollment, err
 
+}
+
+func (s *svc) Unenroll(ctx context.Context, classroomID pgtype.UUID, userID string) error {
+	rowsAffected, err := s.queries.DeleteEnrollmentByClassroomAndUserID(ctx, postgres.DeleteEnrollmentByClassroomAndUserIDParams{ClassroomID: classroomID, UserID: userID})
+	if err != nil {
+		return fmt.Errorf("failed to unenroll to classroom: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return ErrNotEnrolled
+	}
+
+	return nil
 }

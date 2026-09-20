@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/LuisCabantac/scholaflow-api/internal/adapters/postgresql"
 	"github.com/LuisCabantac/scholaflow-api/internal/apperrors"
 	"github.com/LuisCabantac/scholaflow-api/internal/request"
 	"github.com/LuisCabantac/scholaflow-api/internal/response"
+	"github.com/go-chi/chi/v5"
 )
 
 type handler struct {
@@ -63,4 +65,27 @@ func (h *handler) Enroll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.Success(w, http.StatusCreated, "Enrolled to classroom successfully.", classroomEnrollment)
+}
+
+func (h *handler) Unenroll(w http.ResponseWriter, r *http.Request) {
+	classroomIDReq := chi.URLParam(r, "classroomID")
+	classroomID, err := postgresql.ParseUUID(classroomIDReq)
+	if err != nil {
+		response.Error(w, apperrors.ErrInvalidID)
+		return
+	}
+
+	user, ok := request.GetAuthUser(r)
+	if !ok {
+		response.Error(w, apperrors.ErrUnauthorizedAccess)
+		return
+	}
+
+	err = h.service.Unenroll(r.Context(), classroomID, user.ID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusCreated, "Unenrolled to classroom successfully.")
 }

@@ -23,4 +23,8 @@ var (
 		Message:    "You are already enrolled in this classroom.",
 		Code:       "already_enrolled",
 		StatusCode: http.StatusConflict}
+	ErrNotEnrolled = &apperrors.AppError{
+		Message:    "You are not enrolled in this classroom.",
+		Code:       "not_enrolled",
+		StatusCode: http.StatusConflict}
 )

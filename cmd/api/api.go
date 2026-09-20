@@ -106,6 +106,9 @@ func (app *application) mount() http.Handler {
 			r.Post("/", classroomHandler.Create)
 			r.Post("/join", classroomHandler.Enroll)
 
+			r.Route("/{classroomID}", func(r chi.Router) {
+				r.Post("/leave", classroomHandler.Unenroll)
+			})
 		})
 
 	})
