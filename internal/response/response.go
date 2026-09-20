@@ -10,7 +10,7 @@ import (
 	"github.com/LuisCabantac/scholaflow-api/internal/apperrors"
 )
 
-func JSON[T comparable](w http.ResponseWriter, status int, data T) error {
+func JSON(w http.ResponseWriter, status int, data any) error {
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(data); err != nil {
 		slog.Error("failed to encode JSON", "error", err.Error())
@@ -33,6 +33,15 @@ func Text(w http.ResponseWriter, status int, body string) error {
 	w.WriteHeader(status)
 	_, err := w.Write([]byte(body))
 	return err
+}
+
+func Success[T any](w http.ResponseWriter, status int, message string, data T) error {
+	return JSON(w, status, APIResponse[T]{
+		Success:    true,
+		StatusCode: status,
+		Message:    message,
+		Data:       data,
+	})
 }
 
 func Error(w http.ResponseWriter, err error) error {
