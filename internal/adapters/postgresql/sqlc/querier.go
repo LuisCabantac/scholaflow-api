@@ -6,10 +6,16 @@ package postgres
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
 	CreateClassroom(ctx context.Context, arg CreateClassroomParams) (Classroom, error)
+	CreateClassroomEnrollment(ctx context.Context, arg CreateClassroomEnrollmentParams) (ClassroomEnrollment, error)
+	GetClassroom(ctx context.Context, id pgtype.UUID) (Classroom, error)
+	GetClassroomByCode(ctx context.Context, code string) (Classroom, error)
+	GetClassroomEnrollment(ctx context.Context, id pgtype.UUID) (ClassroomEnrollment, error)
 	GetUser(ctx context.Context, id string) (User, error)
 }
 
