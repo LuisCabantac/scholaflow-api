@@ -3,12 +3,13 @@ package classrooms
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/rand/v2"
-	"net/http"
 
 	"github.com/LuisCabantac/scholaflow-api/internal/adapters/postgresql"
 	postgres "github.com/LuisCabantac/scholaflow-api/internal/adapters/postgresql/sqlc"
 	"github.com/LuisCabantac/scholaflow-api/internal/apperrors"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -65,9 +66,36 @@ func (s *svc) Create(ctx context.Context, req CreateClassroomRequest, userID str
 		return nil, err
 	}
 
-	return nil, &apperrors.AppError{
-		Message:    "Failed to generate a unique classroom code. Please try again.",
-		Code:       "code_generation_failed",
-		StatusCode: http.StatusInternalServerError,
+	return nil, ErrCodeGenerationFailed
+}
+
+func (s *svc) Enroll(ctx context.Context, req EnrollClassroomRequest, userID string) (*postgres.ClassroomEnrollment, error) {
+	classroom, err := s.queries.GetClassroomByCode(ctx, req.Code)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrClassNotFound
+		}
+
+		return nil, fmt.Errorf("failed to fetch classroom: %w", err)
 	}
+
+	if classroom.TeacherID == userID {
+		return nil, ErrSelfEnrollment
+	}
+
+	enrollment, err := s.queries.CreateClassroomEnrollment(ctx, postgres.CreateClassroomEnrollmentParams{
+		ClassroomID: classroom.ID,
+		UserID:      userID,
+	})
+	if err != nil {
+		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok {
+			if pgErr.Code == "23505" && pgErr.ConstraintName == "uq_classroom_enrollment" {
+				return nil, ErrAlreadyEnrolled
+			}
+		}
+		return nil, fmt.Errorf("faild to enroll in classroom: %w", err)
+	}
+
+	return &enrollment, err
+
 }

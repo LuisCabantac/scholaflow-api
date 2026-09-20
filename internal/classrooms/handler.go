@@ -41,3 +41,26 @@ func (h *handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	response.Success(w, http.StatusCreated, "Classroom created successfully.", classroom)
 }
+
+func (h *handler) Enroll(w http.ResponseWriter, r *http.Request) {
+	var enrollClassroomReq EnrollClassroomRequest
+	err := request.DecodeJSON(r, &enrollClassroomReq)
+	if err != nil {
+		response.Error(w, fmt.Errorf("failed to parse classroom enroll payload: %v: %w", err, apperrors.ErrMissingBody))
+		return
+	}
+
+	user, ok := request.GetAuthUser(r)
+	if !ok {
+		response.Error(w, apperrors.ErrUnauthorizedAccess)
+		return
+	}
+
+	classroomEnrollment, err := h.service.Enroll(r.Context(), enrollClassroomReq, user.ID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.Success(w, http.StatusCreated, "Enrolled to classroom successfully.", classroomEnrollment)
+}

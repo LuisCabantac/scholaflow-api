@@ -104,6 +104,7 @@ func (app *application) mount() http.Handler {
 			classroomHandler := classrooms.NewHandler(classroomSvc)
 
 			r.Post("/", classroomHandler.Create)
+			r.Post("/join", classroomHandler.Enroll)
 
 		})
 

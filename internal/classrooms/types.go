@@ -11,6 +11,7 @@ import (
 
 type Service interface {
 	Create(ctx context.Context, req CreateClassroomRequest, userID string) (*postgres.Classroom, error)
+	Enroll(ctx context.Context, req EnrollClassroomRequest, userID string) (*postgres.ClassroomEnrollment, error)
 }
 
 type CreateClassroomRequest struct {
@@ -57,6 +58,22 @@ func (r *CreateClassroomRequest) Validate() error {
 
 	if r.Room != nil && strings.TrimSpace(*r.Room) == "" {
 		r.Room = nil
+	}
+
+	return nil
+}
+
+type EnrollClassroomRequest struct {
+	Code string `json:"code"`
+}
+
+func (r *EnrollClassroomRequest) Validate() error {
+	if strings.TrimSpace(r.Code) == "" {
+		return &apperrors.AppError{
+			Message:    "Classroom code is required",
+			Code:       "missing_code",
+			StatusCode: http.StatusBadRequest,
+		}
 	}
 
 	return nil
