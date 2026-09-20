@@ -13,6 +13,7 @@ import (
 type Querier interface {
 	CreateClassroom(ctx context.Context, arg CreateClassroomParams) (Classroom, error)
 	CreateClassroomEnrollment(ctx context.Context, arg CreateClassroomEnrollmentParams) (ClassroomEnrollment, error)
+	DeleteEnrollmentByClassroomAndUserID(ctx context.Context, arg DeleteEnrollmentByClassroomAndUserIDParams) (int64, error)
 	GetClassroom(ctx context.Context, id pgtype.UUID) (Classroom, error)
 	GetClassroomByCode(ctx context.Context, code string) (Classroom, error)
 	GetClassroomEnrollment(ctx context.Context, id pgtype.UUID) (ClassroomEnrollment, error)

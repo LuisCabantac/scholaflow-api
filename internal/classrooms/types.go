@@ -7,11 +7,13 @@ import (
 
 	postgres "github.com/LuisCabantac/scholaflow-api/internal/adapters/postgresql/sqlc"
 	"github.com/LuisCabantac/scholaflow-api/internal/apperrors"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Service interface {
 	Create(ctx context.Context, req CreateClassroomRequest, userID string) (*postgres.Classroom, error)
 	Enroll(ctx context.Context, req EnrollClassroomRequest, userID string) (*postgres.ClassroomEnrollment, error)
+	Unenroll(ctx context.Context, classroomID pgtype.UUID, userID string) error
 }
 
 type CreateClassroomRequest struct {

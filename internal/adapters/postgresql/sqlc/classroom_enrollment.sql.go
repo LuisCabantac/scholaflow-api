@@ -37,6 +37,24 @@ func (q *Queries) CreateClassroomEnrollment(ctx context.Context, arg CreateClass
 	return i, err
 }
 
+const deleteEnrollmentByClassroomAndUserID = `-- name: DeleteEnrollmentByClassroomAndUserID :execrows
+DELETE FROM public."classroom_enrollment"
+WHERE classroom_id = $1 AND user_id = $2
+`
+
+type DeleteEnrollmentByClassroomAndUserIDParams struct {
+	ClassroomID pgtype.UUID `json:"classroom_id"`
+	UserID      string      `json:"user_id"`
+}
+
+func (q *Queries) DeleteEnrollmentByClassroomAndUserID(ctx context.Context, arg DeleteEnrollmentByClassroomAndUserIDParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteEnrollmentByClassroomAndUserID, arg.ClassroomID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const getClassroomEnrollment = `-- name: GetClassroomEnrollment :one
 SELECT id, classroom_id, user_id, created_at FROM public."classroom_enrollment"
 WHERE id = $1
