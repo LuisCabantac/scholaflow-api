@@ -1,0 +1,43 @@
+package classrooms
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/LuisCabantac/scholaflow-api/internal/apperrors"
+	"github.com/LuisCabantac/scholaflow-api/internal/request"
+	"github.com/LuisCabantac/scholaflow-api/internal/response"
+)
+
+type handler struct {
+	service Service
+}
+
+func NewHandler(svc Service) *handler {
+	return &handler{
+		service: svc,
+	}
+}
+
+func (h *handler) CreateClassroom(w http.ResponseWriter, r *http.Request) {
+	var createClassroomReq CreateClassroomRequest
+	err := request.DecodeJSON(r, &createClassroomReq)
+	if err != nil {
+		response.Error(w, fmt.Errorf("failed to parse create classroom payload: %v: %w", err, apperrors.ErrMissingBody))
+		return
+	}
+
+	user, ok := request.GetAuthUser(r)
+	if !ok {
+		response.Error(w, apperrors.ErrUnauthorizedAccess)
+		return
+	}
+
+	classroom, err := h.service.CreateClassroom(r.Context(), createClassroomReq, user.ID)
+	if err != nil {
+		response.Error(w, apperrors.ErrUnauthorizedAccess)
+		return
+	}
+
+	response.Success(w, http.StatusCreated, "Classroom created successfully.", classroom)
+}

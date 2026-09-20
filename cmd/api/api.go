@@ -10,6 +10,8 @@ import (
 
 	postgres "github.com/LuisCabantac/scholaflow-api/internal/adapters/postgresql/sqlc"
 	"github.com/LuisCabantac/scholaflow-api/internal/apperrors"
+	"github.com/LuisCabantac/scholaflow-api/internal/classrooms"
+	"github.com/LuisCabantac/scholaflow-api/internal/request"
 	"github.com/LuisCabantac/scholaflow-api/internal/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -96,6 +98,15 @@ func (app *application) mount() http.Handler {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(app.authenticate)
+
+		r.Route("/classrooms", func(r chi.Router) {
+			classroomSvc := classrooms.NewService(app.queries)
+			classroomHandler := classrooms.NewHandler(classroomSvc)
+
+			r.Post("/", classroomHandler.CreateClassroom)
+
+		})
+
 	})
 
 	return r
@@ -138,7 +149,7 @@ func (app *application) getKeySet(ctx context.Context) (jwk.Set, error) {
 		return app.jwks.keySet, nil
 	}
 
-	jwksURL := fmt.Sprintf("%s/api/auth/jwks", app.cfg.authURL)
+	jwksURL := fmt.Sprintf("%s/api/auth/jwks", app.cfg.appURL)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, jwksURL, nil)
 	if err != nil {
 		return nil, err

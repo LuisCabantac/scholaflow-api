@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	CreateClassroom(ctx context.Context, arg CreateClassroomParams) (Classroom, error)
 	GetUser(ctx context.Context, id string) (User, error)
 }
 
