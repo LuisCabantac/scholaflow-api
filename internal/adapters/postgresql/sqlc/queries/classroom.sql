@@ -5,3 +5,11 @@ INSERT INTO public."classroom" (
     $1, $2, $3, $4, $5, $6, $7, $8, $9
 )
 RETURNING *;
+
+-- name: GetClassroom :one
+SELECT * FROM public."classroom"
+WHERE id = $1;
+
+-- name: GetClassroomByCode :one
+SELECT * FROM public."classroom"
+WHERE code = $1;

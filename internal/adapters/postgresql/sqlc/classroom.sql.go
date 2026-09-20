@@ -63,3 +63,57 @@ func (q *Queries) CreateClassroom(ctx context.Context, arg CreateClassroomParams
 	)
 	return i, err
 }
+
+const getClassroom = `-- name: GetClassroom :one
+SELECT id, name, subject, section, description, room, code, card_background, illustration_index, allow_users_to_comment, allow_users_to_post, teacher_id, created_at, updated_at FROM public."classroom"
+WHERE id = $1
+`
+
+func (q *Queries) GetClassroom(ctx context.Context, id pgtype.UUID) (Classroom, error) {
+	row := q.db.QueryRow(ctx, getClassroom, id)
+	var i Classroom
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Subject,
+		&i.Section,
+		&i.Description,
+		&i.Room,
+		&i.Code,
+		&i.CardBackground,
+		&i.IllustrationIndex,
+		&i.AllowUsersToComment,
+		&i.AllowUsersToPost,
+		&i.TeacherID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getClassroomByCode = `-- name: GetClassroomByCode :one
+SELECT id, name, subject, section, description, room, code, card_background, illustration_index, allow_users_to_comment, allow_users_to_post, teacher_id, created_at, updated_at FROM public."classroom"
+WHERE code = $1
+`
+
+func (q *Queries) GetClassroomByCode(ctx context.Context, code string) (Classroom, error) {
+	row := q.db.QueryRow(ctx, getClassroomByCode, code)
+	var i Classroom
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Subject,
+		&i.Section,
+		&i.Description,
+		&i.Room,
+		&i.Code,
+		&i.CardBackground,
+		&i.IllustrationIndex,
+		&i.AllowUsersToComment,
+		&i.AllowUsersToPost,
+		&i.TeacherID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
