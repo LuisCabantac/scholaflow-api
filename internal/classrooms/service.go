@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math/rand/v2"
+	"net/http"
 
 	"github.com/LuisCabantac/scholaflow-api/internal/adapters/postgresql"
 	postgres "github.com/LuisCabantac/scholaflow-api/internal/adapters/postgresql/sqlc"
@@ -31,26 +32,42 @@ func NewService(q *postgres.Queries) *svc {
 	}
 }
 
-func (s *svc) CreateClassroom(ctx context.Context, req CreateClassroomRequest, userID string) (*postgres.Classroom, error) {
-	classroom, err := s.queries.CreateClassroom(ctx, postgres.CreateClassroomParams{
-		Name:              req.Name,
-		Subject:           postgresql.TextFromPtr(req.Subject),
-		Section:           req.Section,
-		Description:       postgresql.TextFromPtr(req.Description),
-		Room:              postgresql.TextFromPtr(req.Room),
-		Code:              generateClassCode(),
-		CardBackground:    req.CardBackground,
-		IllustrationIndex: int32(rand.IntN(5)),
-		TeacherID:         userID,
-	})
+const maxRetries = 3
 
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23503" {
-			return nil, apperrors.ErrUserNotFound
+func (s *svc) Create(ctx context.Context, req CreateClassroomRequest, userID string) (*postgres.Classroom, error) {
+	for range maxRetries {
+		classroom, err := s.queries.CreateClassroom(ctx, postgres.CreateClassroomParams{
+			Name:              req.Name,
+			Subject:           postgresql.TextFromPtr(req.Subject),
+			Section:           req.Section,
+			Description:       postgresql.TextFromPtr(req.Description),
+			Room:              postgresql.TextFromPtr(req.Room),
+			Code:              generateClassCode(),
+			CardBackground:    req.CardBackground,
+			IllustrationIndex: int32(rand.IntN(5)),
+			TeacherID:         userID,
+		})
+
+		if err == nil {
+			return &classroom, nil
 		}
+
+		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok {
+			if pgErr.Code == "23503" {
+				return nil, apperrors.ErrUserNotFound
+			}
+
+			if pgErr.Code == "23505" && pgErr.ConstraintName == "classroom_code_key" {
+				continue
+			}
+		}
+
 		return nil, err
 	}
 
-	return &classroom, nil
+	return nil, &apperrors.AppError{
+		Message:    "Failed to generate a unique classroom code. Please try again.",
+		Code:       "code_generation_failed",
+		StatusCode: http.StatusInternalServerError,
+	}
 }
