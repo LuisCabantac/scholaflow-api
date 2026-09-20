@@ -149,7 +149,7 @@ func (app *application) getKeySet(ctx context.Context) (jwk.Set, error) {
 		return app.jwks.keySet, nil
 	}
 
-	jwksURL := fmt.Sprintf("%s/api/auth/jwks", app.cfg.appURL)
+	jwksURL := fmt.Sprintf("%s/api/auth/jwks", app.cfg.authURL)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, jwksURL, nil)
 	if err != nil {
 		return nil, err
