@@ -35,7 +35,13 @@ var (
 	ErrMissingIDParam = &AppError{
 		Message:    "ID parameter is required.",
 		Code:       "missing_id_param",
-		StatusCode: http.StatusBadRequest}
+		StatusCode: http.StatusBadRequest,
+	}
+	ErrInvalidID = &AppError{
+		Message:    "Invalid ID parameter.",
+		Code:       "invalid_id",
+		StatusCode: http.StatusBadRequest,
+	}
 	ErrMissingBody = &AppError{
 		Message:    "Request body is required.",
 		Code:       "missing_request_body",
