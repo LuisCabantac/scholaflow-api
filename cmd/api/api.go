@@ -26,16 +26,6 @@ const apiName = "ScholaFlow API"
 
 const version = "1.0.0"
 
-type contextKey string
-
-const authUserContextKey contextKey = "authUser"
-
-type AuthUser struct {
-	ID    string
-	Email string
-	Name  string
-}
-
 type dbConfig struct {
 	dsn string
 }
@@ -193,13 +183,12 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 		email, _ := jwt.Get[string](token, "email")
 		name, _ := jwt.Get[string](token, "name")
 
-		authUsr := &AuthUser{
+		authUsr := &request.AuthUser{
 			ID:    userID,
 			Email: email,
 			Name:  name,
 		}
 
-		ctx := context.WithValue(r.Context(), authUserContextKey, authUsr)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(w, request.SetAuthUser(r, authUsr))
 	})
 }
